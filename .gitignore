@@ -1,0 +1,7 @@
+﻿obj
+bin
+.vs
+*.user
+properties
+dist/*.pdb
+dist/*.vshost.exe
