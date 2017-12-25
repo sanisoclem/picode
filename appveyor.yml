@@ -1,0 +1,31 @@
+version: 1.0.0-alpha{build}
+skip_branch_with_pr: true
+image: Visual Studio 2017
+configuration: Release
+init:
+- ps: $env:customnugetversion = if ($env:APPVEYOR_REPO_TAG -eq $True) { "$env:APPVEYOR_REPO_TAG_NAME" } else { "$env:APPVEYOR_BUILD_VERSION" }
+- ps: Update-AppveyorBuild -Version $env:customnugetversion
+dotnet_csproj:
+  patch: true
+  file: src\**\*.csproj
+  informational_version: '{version}'
+build_script:
+- cmd: dotnet publish -c release -r win7-x64
+- cmd: dotnet publish -c release -r win7-x86
+- cmd: dotnet publish -c release -r linux-x64
+- cmd: dotnet publish -c release -r osx-x64
+artifacts:
+- path: src/picode/bin/release/netcoreapp2.0/win7-x64
+- path: src/picode/bin/release/netcoreapp2.0/win7-x86
+- path: src/picode/bin/release/netcoreapp2.0/linux-x64
+- path: src/picode/bin/release/netcoreapp2.0/osx-x64
+deploy:
+  provider: GitHub
+  auth_token:
+    secure: hhn3NnKODFTQ/8GReKNWAwjDFIgPM5xQMJszQS2zoW11hV2xGfH/v3kzCQTGiN4G
+  artifact: /.*\.zip/            # upload all NuGet packages to release assets
+  draft: true
+  prerelease: false
+  on:
+    branch: master                 # release from master branch only
+    appveyor_repo_tag: true        # deploy on tag push only

@@ -1,5 +1,7 @@
 ﻿using SixLabors.ImageSharp;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -10,7 +12,7 @@ namespace picode
 {
     class Program
     {
-        static int _blockSize = 256;
+        static int _blockSize = 128;
 
         static void InitKeyIV(RijndaelManaged c, string pass)
         {
@@ -33,7 +35,7 @@ namespace picode
 
         static void Main(string[] args)
         {
-            if (!(args.Length == 3 && args[0] == "-e") && !(args[0] == "-d" && args.Length == 4))
+            if (args == null || (!(args.Length == 3 && args[0] == "-e") && !(args[0] == "-d" && args.Length == 4)))
             {
                 ShowUsage();
                 return;
@@ -109,11 +111,11 @@ namespace picode
                     for (long w = 0; w < (width / 3); w++)
                     {
                         var index = (i * width) + (w * 3);
-                        var r = index >= buf.LongLength ? 0 : buf[index];
-                        var g = index + 1 >= buf.LongLength ? 0 : buf[index + 1];
-                        var b = index + 2 >= buf.LongLength ? 0 : buf[index + 2];
+                        var bytes = buf.Skip((int)index).Take(3).ToArray();
+                        if (bytes.Length < 4)
+                            bytes = bytes.Concat(Enumerable.Repeat<byte>(0, 4 - bytes.Length)).ToArray();
 
-                        img[(int)w, (int)i] = new Rgba32(r, g, b);
+                        img[(int)w, (int)i] = new Rgba32(BitConverter.ToUInt32(bytes, 0));
                     }
                 }
                 using (var s = File.Create(savePath))
