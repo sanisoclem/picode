@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Imaging;
+﻿using SixLabors.ImageSharp;
+using System;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -15,7 +12,7 @@ namespace picode
     {
         static int _blockSize = 256;
 
-        static void InitKeyIV(RijndaelManaged c,string pass)
+        static void InitKeyIV(RijndaelManaged c, string pass)
         {
             const int Iterations = 234;
             byte[] salt = new byte[] { 1, 2, 23, 234, 37, 48, 134, 63, 248, 4 };
@@ -42,7 +39,8 @@ namespace picode
                 return;
             }
 
-            try {
+            try
+            {
 
                 if (args[0] == "-d")
                 {
@@ -67,7 +65,8 @@ namespace picode
         {
             var buf = File.ReadAllBytes(path);
             var outStream = new MemoryStream(buf.Length);
-            try {
+            try
+            {
                 using (RijndaelManaged RMCrypto = new RijndaelManaged())
                 {
                     RMCrypto.BlockSize = _blockSize;
@@ -102,8 +101,8 @@ namespace picode
             var height = (int)buf.LongLength / width;
             if (buf.LongLength % width != 0)
                 height += 1;
-
-            using (var bitmap = new Bitmap(width / 3, height, System.Drawing.Imaging.PixelFormat.Format24bppRgb))
+            
+            using (var img = new Image<Rgba32>(Configuration.Default, width / 3, height))
             {
                 for (long i = 0; i < height; i++)
                 {
@@ -114,10 +113,13 @@ namespace picode
                         var g = index + 1 >= buf.LongLength ? 0 : buf[index + 1];
                         var b = index + 2 >= buf.LongLength ? 0 : buf[index + 2];
 
-                        bitmap.SetPixel((int)w, (int)i, Color.FromArgb(r, g, b));
+                        img[(int)w, (int)i] = new Rgba32(r, g, b);
                     }
                 }
-                bitmap.Save(savePath, ImageFormat.Bmp);
+                using (var s = File.Create(savePath))
+                {
+                    img.SaveAsBmp(s);
+                }
             }
         }
         static void DecryptAndSave(string filePath, string outPath, string pass)
@@ -125,13 +127,13 @@ namespace picode
             using (var mem = new MemoryStream())
             {
 
-                using (var bitmap = (Bitmap)Bitmap.FromFile(filePath))
+                using (var bitmap = Image.Load<Rgba32>(filePath))
                 {
                     for (long i = 0; i < bitmap.Height; i++)
                     {
                         for (long w = 0; w < bitmap.Width; w++)
                         {
-                            var pix = bitmap.GetPixel((int)w, (int)i);
+                            var pix = bitmap[(int)w, (int)i];
                             mem.WriteByte(pix.R);
                             mem.WriteByte(pix.G);
                             mem.WriteByte(pix.B);
