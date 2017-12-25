@@ -1,3 +1,5 @@
 ﻿# PiCode
 
-``picode`` is a file encryption app that I just scrapped quickly together to do some sneaky stuff.. It encrypts and decrypts files and encodes it to a bitmap for some sneeky sneeky data transfers.
+[![GitHub license](https://img.shields.io/github/license/sanisoclem/picode.svg?style=for-the-badge)](https://github.com/sanisoclem/picode/blob/master/LICENSE)
+[![AppVeyor branch](https://img.shields.io/appveyor/ci/sanisoclem/picode/master.svg?style=for-the-badge)](https://ci.appveyor.com/project/sanisoclem/picode/branch/master)
+[![Github Releases](https://img.shields.io/badge/release-1.0.0--beta001-orange.svg?style=flat)](https://github.com/sanisoclem/picode/releases)
